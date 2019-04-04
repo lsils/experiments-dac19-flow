@@ -57,7 +57,7 @@ def read(name,filename):
 
 def clear_store():
     cirkit.store(clear=True, aig=True, mig=True, xag=True, xmg=True, lut=True)
-    
+
 def ps(name):
   return cirkit.ps(silent=True, **{name : True})
 
@@ -116,7 +116,7 @@ def rw(name):
     return cirkit.cut_rewrite(strategy=0, progress=True, lutsize=4, xag=True)
   else:
     print("[i] rw: graph type not supported")
-    
+
 def rsz(name, cut_size, depth=1):
    return cirkit.resub(progress=True, max_pis=cut_size, depth=depth, zero_gain=True)
 
@@ -152,12 +152,44 @@ compress2rs = [
     [bz, {}],
 ]
 
+def run_flow(flow_script, verbose = False):
+    time_total = 0.0
+    for transformation in compress2rs:
+        functor = transformation[0]
+        args = transformation[1]
+
+        stats = functor(name, **args)
+        time = stats['time_total']
+
+        if (verbose):
+            print("[i] ", functor.__name__, args, 'time: %8.2fs' % time)
+        time_total = time_total + time
+
+    statistics = {
+        'time_total': time_total
+    }
+    return statistics
+
+table = {}
+
+# table = {
+#     'adder' :
+#     {
+#         'baseline': { 'gates': gates, 'depth': depth, 'luts': luts, 'time': time },
+#         'aig': { ... } ,
+#         'mig': { ... },
+#         'xag': { ... },
+#         'xmg': { ... },
+#     }
+#     ...
+# }
+
 for benchmark, benchmark_params in benchmarks.items():
     for name, configuration in configurations.items():
         print(f"[i] run {benchmark} with {name}")
 
         # read benchmark
-        in_filename = aigerfile(benchmark)      
+        in_filename = aigerfile(benchmark)
         read(name, in_filename)
 
         # compute statistics for initial benchmark
@@ -168,22 +200,31 @@ for benchmark, benchmark_params in benchmarks.items():
         read(name, in_filename)
 
         # run flow script
-        time_total = 0.0
-        for transformation in compress2rs:
-            functor = transformation[0]
-            args = transformation[1]
-            
-            stats = functor(name, **args)
-            time = stats['time_total']
+        stats_opt = run_flow(compress2rs)
 
-            # print(functor.__name__, args, '%8.2fs' % time)
-            time_total = time_total + time
-            
         # compute statistics for optimized benchmark
         stats_after = compute_stats(name, in_filename)
 
-        print(stats_before)
-        print(stats_after)
-        print('%8.2fs' % time_total)
-
-            
+        # update table
+        if (not benchmark in table):
+            table[benchmark] = {
+                'baseline': {
+                    'gates': stats_before['gates'],
+                    'depth': stats_before['depth'],
+                    'luts': stats_before['luts'],
+                    'time': 0.0,
+                },
+                name: {
+                    'gates': stats_after['gates'],
+                    'depth': stats_after['depth'],
+                    'luts': stats_after['luts'],
+                    'time': stats_opt['time_total'],
+                }
+            }
+        else:
+            table[benchmark][name] = {
+                'gates': stats_after['gates'],
+                'depth': stats_after['depth'],
+                'luts': stats_after['luts'],
+                'time': stats_opt['time_total'],
+            }
