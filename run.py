@@ -4,7 +4,7 @@ import subprocess
 
 ### Global settings
 verbose = False
-print_progress = False
+print_progress = True
 
 ### Misc
 class color:
@@ -267,17 +267,17 @@ for benchmark, benchmark_params in benchmarks.items():
       if print_progress:
          print(table[benchmark][name], verified)
 
-# Format table
+# Generate final table in LATEX format
 for benchmark in table.keys():
    line = []
    line.append( benchmark )
+   line.append( "" ) # dummy column for LATEX spacing
 
    for network_type in table[benchmark].keys():
       data = table[benchmark][network_type]
 
       if ( network_type == 'baseline' ):
-         line.append( '%5d' % data['pis'] )
-         line.append( '%5d' % data['pos'] )
+         line.append( '%5d / %5d' % (data['pis'],data['pos']) )
          line.append( '%5d' % data['gates'] )
          line.append( '%5d' % data['depth'] )
          line.append( '%5d' % data['luts'] )
