@@ -24,23 +24,23 @@ benchmarks = {
   "adder":      { 'verify': True },
   "arbiter":    { 'verify': True },
   "bar":        { 'verify': True },
-#  "cavlc":      { 'verify': True },
-#  "ctrl":       { 'verify': True },
-#  "dec":        { 'verify': True },
-#  "div":        { 'verify': True },
-#  "i2c":        { 'verify': True },
-#  "int2float":  { 'verify': True },
-#  "log2":       { 'verify': True },
-#  "max":        { 'verify': True },
-#  "mem_ctrl":   { 'verify': True },
-#  "multiplier": { 'verify': True },
-#  "priority":   { 'verify': True },
-#  "router":     { 'verify': True },
-#  "sin":        { 'verify': True },
-#  "sqrt":       { 'verify': True },
-#  "square":     { 'verify': True },
-#  "voter":      { 'verify': True },
-#  "hyp":        { 'verify': False },
+  "cavlc":      { 'verify': True },
+  "ctrl":       { 'verify': True },
+  "dec":        { 'verify': True },
+  "div":        { 'verify': True },
+  "i2c":        { 'verify': True },
+  "int2float":  { 'verify': True },
+  "log2":       { 'verify': True },
+  "max":        { 'verify': True },
+  "mem_ctrl":   { 'verify': True },
+  "multiplier": { 'verify': True },
+  "priority":   { 'verify': True },
+  "router":     { 'verify': True },
+  "sin":        { 'verify': True },
+  "sqrt":       { 'verify': True },
+  "square":     { 'verify': True },
+  "voter":      { 'verify': True },
+  "hyp":        { 'verify': False },
 }
 
 ### Configurations
@@ -83,8 +83,10 @@ def compute_stats(name):
    lut_stats = ps('lut').dict()
 
    statistics = {
-      'depth': ntk_stats['depth'],
+      'pis': ntk_stats['pis'],
+      'pos': ntk_stats['pos'],
       'gates' : ntk_stats['gates'],
+      'depth': ntk_stats['depth'],
       'luts' : lut_stats['gates']
    }
 
@@ -235,12 +237,16 @@ for benchmark, benchmark_params in benchmarks.items():
       if (not benchmark in table):
          table[benchmark] = {
             'baseline': {
+               'pis': stats_before['pis'],
+               'pos': stats_before['pos'],
                'gates': stats_before['gates'],
                'depth': stats_before['depth'],
                'luts': stats_before['luts'],
                'time': 0.0,
             },
             name: {
+               'pis': stats_before['pis'],
+               'pos': stats_before['pos'],
                'gates': stats_after['gates'],
                'depth': stats_after['depth'],
                'luts': stats_after['luts'],
@@ -249,6 +255,8 @@ for benchmark, benchmark_params in benchmarks.items():
          }
       else:
          table[benchmark][name] = {
+            'pis': stats_before['pis'],
+            'pos': stats_before['pos'],
             'gates': stats_after['gates'],
             'depth': stats_after['depth'],
             'luts': stats_after['luts'],
@@ -258,3 +266,25 @@ for benchmark, benchmark_params in benchmarks.items():
       # print progress for each benchmark
       if print_progress:
          print(table[benchmark][name], verified)
+
+# Format table
+for benchmark in table.keys():
+   line = []
+   line.append( benchmark )
+
+   for network_type in table[benchmark].keys():
+      data = table[benchmark][network_type]
+
+      if ( network_type == 'baseline' ):
+         line.append( '%5d' % data['pis'] )
+         line.append( '%5d' % data['pos'] )
+         line.append( '%5d' % data['gates'] )
+         line.append( '%5d' % data['depth'] )
+         line.append( '%5d' % data['luts'] )
+      else:
+         line.append( '%5d' % data['gates'] )
+         line.append( '%5d' % data['depth'] )
+         line.append( '%5d' % data['luts'] )
+         line.append( '%8.2f' % data['time'] )
+
+   print(' & '.join(line), '\\\\')
