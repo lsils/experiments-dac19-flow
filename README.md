@@ -1,4 +1,4 @@
-## Experiments for DAC'19: *Scalable Generic Logic Synthesis: One Approach to Rule Them All*
+## *Scalable Generic Logic Synthesis: One Approach to Rule Them All* (Experiments for DAC'19)
 
 ### Installation
 
