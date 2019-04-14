@@ -2,8 +2,10 @@
 
 ### Installation
 
-* Clone and build `cirkit3`: https://github.com/msoeken/cirkit
-* Install Python bindings of `cirkit3` (see instructions in the README of `cirkit3`)
+* Install Python 3 binding (versionn 3.0a2.dev5) of `cirkit3` (https://github.com/msoeken/cirkit) with `pip`:
+```
+python3 -m pip install cirkit==3.0a2.dev5
+```
 
 * Clone and build `abc`: https://github.com/berkeley-abc/abc (required for combinational equivalence checking)
 * Add the path to the executable of `abc` to your PATH variable
