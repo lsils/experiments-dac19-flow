@@ -166,7 +166,7 @@ compress2rs = [
 
 def run_flow(flow_script, verbose = False):
     time_total = 0.0
-    for transformation in compress2rs:
+    for transformation in flow_script:
         functor = transformation[0]
         args = transformation[1]
 
